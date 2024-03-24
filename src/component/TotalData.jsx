@@ -54,7 +54,7 @@ const DelegationInfo = () => {
         <thead>
           <tr>
             <th>Delegators</th>
-            <th>Total Delegation (USD)</th>
+            <th>Total Delegation </th>
             <th>Total Amount (INR)</th>
           </tr>
         </thead>
