@@ -53,6 +53,7 @@ const DelegationInfo = () => {
       <table className="delegation-table">
         <thead>
           <tr>
+            <th>Chain Name</th>
             <th>Delegators</th>
             <th>Total Delegation </th>
             <th>Total Amount (INR)</th>
@@ -60,6 +61,7 @@ const DelegationInfo = () => {
         </thead>
         <tbody>
           <tr>
+            <td>Source</td>
             <td>{totalDelegations}</td>
             <td>{usdAmount.toFixed(0)}</td>
             <td>{inrAmount.toFixed(0)}</td>
