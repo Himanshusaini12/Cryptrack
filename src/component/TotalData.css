@@ -1,0 +1,13 @@
+.delegation-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .delegation-table th, .delegation-table td {
+    border: 1px solid #dddddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  
+  

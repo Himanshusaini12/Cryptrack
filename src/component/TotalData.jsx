@@ -1,25 +1,44 @@
 import React, { useState, useEffect } from 'react';
+import './TotalData.css';
 
-const API_URL = 'https://source.api.nodeshub.online/cosmos/staking/v1beta1/validators/sourcevaloper1zvuyw9utsdp3w0mnrructw87p8sy8a3su645wj/delegations';
+const DELEGATIONS_API_URL = 'https://source.api.nodeshub.online/cosmos/staking/v1beta1/validators/sourcevaloper1zvuyw9utsdp3w0mnrructw87p8sy8a3su645wj/delegations';
+const VALIDATORS_API_URL = 'https://source.api.nodeshub.online/cosmos/staking/v1beta1/delegators/source1zvuyw9utsdp3w0mnrructw87p8sy8a3suyny4s/validators';
 
-const TotalData = () => {
+const DelegationInfo = () => {
   const [delegations, setDelegations] = useState([]);
   const [totalDelegations, setTotalDelegations] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [tokens, setTokens] = useState('');
+  const [usdAmount, setUSDAmount] = useState(0);
+  const [inrAmount, setINRAmount] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
-        setDelegations(data.delegation_responses);
-        setTotalDelegations(data.pagination.total);
+        // Fetch delegations data
+        const delegationsResponse = await fetch(DELEGATIONS_API_URL);
+        const delegationsData = await delegationsResponse.json();
+        setDelegations(delegationsData.delegation_responses);
+        setTotalDelegations(delegationsData.pagination.total);
 
-        const totalAmountValue = data.delegation_responses.reduce(
-          (sum, delegation) => sum + parseInt(delegation.balance.amount),
-          0
-        );
-        setTotalAmount(totalAmountValue);
+        // Fetch validators data
+        const validatorsResponse = await fetch(VALIDATORS_API_URL);
+        const validatorsData = await validatorsResponse.json();
+
+        // Extract tokens value and divide by 1,000,000
+        if (validatorsData.validators.length > 0) {
+          const rawTokens = validatorsData.validators[0].tokens;
+          const tokensInMillions = parseInt(rawTokens) / 1000000;
+          setTokens(tokensInMillions);
+
+          // Calculate USD amount
+          const usdValue = tokensInMillions * 1; // Assuming 1 token = 1 USD
+          setUSDAmount(usdValue);
+
+          // Calculate INR amount (assuming 1 USD = 90 INR)
+          const inrValue = usdValue * 90;
+          setINRAmount(inrValue);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -29,12 +48,26 @@ const TotalData = () => {
   }, []);
 
   return (
-    <div>
+    <div className="container">
       <h2>Delegation Information</h2>
-      <p>Total Delegations: {totalDelegations}</p>
-      <p>Total Amount Delegated: {totalAmount} </p>
+      <table className="delegation-table">
+        <thead>
+          <tr>
+            <th>Delegators</th>
+            <th>Total Delegation (USD)</th>
+            <th>Total Amount (INR)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{totalDelegations}</td>
+            <td>{usdAmount.toFixed(0)}</td>
+            <td>{inrAmount.toFixed(0)}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 };
 
-export default TotalData;
+export default DelegationInfo;
