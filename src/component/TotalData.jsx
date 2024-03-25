@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './TotalData.css';
+import LoadingSpinner from './LoadingSpinner'; // Import your loading spinner component
 
 const fetchChainData = async (chainName, validatorAddress, walletAddress, apiUrl) => {
   try {
@@ -41,9 +42,12 @@ const fetchChainData = async (chainName, validatorAddress, walletAddress, apiUrl
 
 const DelegationInfo = () => {
   const [chainData, setChainData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // Add isLoading state
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true); // Set loading state to true before fetching data
+
       const sourceData = await fetchChainData(
         'Source',
         'sourcevaloper1zvuyw9utsdp3w0mnrructw87p8sy8a3su645wj',
@@ -142,6 +146,8 @@ const DelegationInfo = () => {
         furyData,
         nibiData,
       ]);
+
+      setIsLoading(false); // Set loading state to false after fetching data
     };
 
     fetchData();
@@ -150,26 +156,30 @@ const DelegationInfo = () => {
   return (
     <div className="container">
       <h2>Delegation Information</h2>
-      <table className="delegation-table">
-        <thead>
-          <tr>
-            <th>Chain Name</th>
-            <th>Delegators</th>
-            <th>Total Delegations </th>
-            <th>Total Amount (INR)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {chainData.map((chain, index) => (
-            <tr key={index}>
-              <td>{chain.chainName}</td>
-              <td>{chain.totalDelegations}</td>
-              <td>{chain.usdAmount.toFixed(0)}</td>
-              <td>{chain.inrAmount.toFixed(0)}</td>
+      {isLoading ? (
+        <LoadingSpinner /> // Render the loading spinner component when isLoading is true
+      ) : (
+        <table className="delegation-table">
+          <thead>
+            <tr>
+              <th>Chain Name</th>
+              <th>Delegators</th>
+              <th>Total Delegations </th>
+              <th>Total Amount (INR)</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {chainData.map((chain, index) => (
+              <tr key={index}>
+                <td>{chain.chainName}</td>
+                <td>{chain.totalDelegations}</td>
+                <td>{chain.usdAmount.toFixed(0)}</td>
+                <td>{chain.inrAmount.toFixed(0)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };
