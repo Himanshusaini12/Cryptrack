@@ -38,7 +38,7 @@ const fetchChainData = async (chainName, validatorAddress, walletAddress, apiUrl
       const rawTokens = validatorsData.validators[0].tokens;
 
       if (chainName === 'Zetachain' || chainName === 'Humans' || chainName === 'Fetchai') {
-        tokens = parseInt(rawTokens) / 100000000000000000;
+        tokens = parseInt(rawTokens) / 1000000000000000000;
       } else {
         tokens = parseInt(rawTokens) / divisor;
       }
