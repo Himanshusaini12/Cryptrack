@@ -15,7 +15,7 @@ const fetchTokenPrice = async (tokenId) => {
   }
 };
 
-const fetchChainData = async (chainName, validatorAddress, walletAddress, apiUrl, tokenId) => {
+const fetchChainData = async (chainName, validatorAddress, walletAddress, apiUrl, tokenId, divisor = 1000000) => {
   try {
     const delegationsUrl = `${apiUrl}/cosmos/staking/v1beta1/validators/${validatorAddress}/delegations`;
     const validatorsUrl = `${apiUrl}/cosmos/staking/v1beta1/delegators/${walletAddress}/validators`;
@@ -30,13 +30,18 @@ const fetchChainData = async (chainName, validatorAddress, walletAddress, apiUrl
     const validatorsResponse = await fetch(validatorsUrl);
     const validatorsData = await validatorsResponse.json();
 
-    // Extract tokens value and divide by 1,000,000
+    // Extract tokens value and divide by the divisor
     let tokens = 0;
     let usdAmount = 0;
 
     if (validatorsData.validators.length > 0) {
       const rawTokens = validatorsData.validators[0].tokens;
-      tokens = parseInt(rawTokens) / 1000000;
+
+      if (chainName === 'Zetachain' || chainName === 'Humans' || chainName === 'Fetchai') {
+        tokens = parseInt(rawTokens) / 100000000000000000;
+      } else {
+        tokens = parseInt(rawTokens) / divisor;
+      }
 
       // Fetch token price from CoinGecko
       const tokenPrice = await fetchTokenPrice(tokenId);
@@ -288,6 +293,10 @@ const DelegationInfo = () => {
     fetchData();
   }, [userChains]);
 
+  const formatNumber = (number) => {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
   return (
     <div className="container">
       <h2>Delegation Information</h2>
@@ -307,16 +316,16 @@ const DelegationInfo = () => {
           <tbody>
             <tr>
               <td>Total</td>
-              <td>{totalDelegators}</td>
+              <td>{formatNumber(totalDelegators)}</td>
               <td>-</td>
-              <td>{totalUSD.toFixed(2)}</td>
+              <td>${formatNumber(totalUSD.toFixed(2))}</td>
             </tr>
             {chainData.map((chain, index) => (
               <tr key={index}>
                 <td>{chain.chainName}</td>
-                <td>{chain.totalDelegations}</td>
-                <td>{chain.tokens.toFixed(2)}</td>
-                <td>{chain.usdAmount.toFixed(2)}</td>
+                <td>{formatNumber(chain.totalDelegations)}</td>
+                <td>{formatNumber(chain.tokens.toFixed(2))}</td>
+                <td>${formatNumber(chain.usdAmount.toFixed(2))}</td>
               </tr>
             ))}
           </tbody>
