@@ -50,10 +50,10 @@ const fetchChainData = async (chainName, validatorAddress, walletAddress, apiUrl
       usdAmount = tokens * tokenPrice;
     }
 
-    return { chainName, delegations, totalDelegations, tokens, usdAmount };
+    return { chainName, delegations, totalDelegations, tokens, usdAmount, divisor };
   } catch (error) {
     console.error(`Error fetching ${chainName} data:`, error);
-    return { chainName, delegations: [], totalDelegations: 0, tokens: 0, usdAmount: 0 };
+    return { chainName, delegations: [], totalDelegations: 0, tokens: 0, usdAmount: 0, divisor };
   }
 };
 
@@ -63,15 +63,17 @@ const AddChainForm = ({ onAddChain }) => {
   const [walletAddress, setWalletAddress] = useState('');
   const [apiUrl, setApiUrl] = useState('');
   const [tokenId, setTokenId] = useState('');
+  const [divisor, setDivisor] = useState(1000000); // Default value is 1000000
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onAddChain({ chainName, validatorAddress, walletAddress, apiUrl, tokenId });
+    onAddChain({ chainName, validatorAddress, walletAddress, apiUrl, tokenId, divisor });
     setChainName('');
     setValidatorAddress('');
     setWalletAddress('');
     setApiUrl('');
     setTokenId('');
+    setDivisor(1000000); // Reset divisor to default value
   };
 
   return (
@@ -121,6 +123,15 @@ const AddChainForm = ({ onAddChain }) => {
           required
         />
       </label>
+      <label>
+        Divisor:
+        <input
+          type="number"
+          value={divisor}
+          onChange={(e) => setDivisor(parseInt(e.target.value))}
+          required
+        />
+      </label>
       <button type="submit">Add Chain</button>
     </form>
   );
@@ -139,7 +150,7 @@ const DelegationInfo = () => {
   }, []);
 
   const handleAddChain = (newChain) => {
-    const updatedChains = [...userChains, newChain];
+    const updatedChains = [...userChains, { ...newChain, divisor: newChain.divisor || 1000000 }];
     setUserChains(updatedChains);
     localStorage.setItem('userChains', JSON.stringify(updatedChains));
   };
@@ -252,7 +263,8 @@ const DelegationInfo = () => {
             chain.validatorAddress,
             chain.walletAddress,
             chain.apiUrl,
-            chain.tokenId
+            chain.tokenId,
+            chain.divisor
           )
         )
       );
@@ -311,6 +323,7 @@ const DelegationInfo = () => {
               <th>Delegators</th>
               <th>Total Amount</th>
               <th>Total Amount (USD)</th>
+              <th>Divisor</th>
             </tr>
           </thead>
           <tbody>
@@ -319,6 +332,7 @@ const DelegationInfo = () => {
               <td>{formatNumber(totalDelegators)}</td>
               <td>-</td>
               <td>${formatNumber(totalUSD.toFixed(2))}</td>
+              <td>-</td>
             </tr>
             {chainData.map((chain, index) => (
               <tr key={index}>
@@ -326,6 +340,7 @@ const DelegationInfo = () => {
                 <td>{formatNumber(chain.totalDelegations)}</td>
                 <td>{formatNumber(chain.tokens.toFixed(2))}</td>
                 <td>${formatNumber(chain.usdAmount.toFixed(2))}</td>
+                <td>{formatNumber(chain.divisor)}</td>
               </tr>
             ))}
           </tbody>
